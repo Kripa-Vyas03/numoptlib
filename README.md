@@ -13,11 +13,11 @@ BFGS (quasi-Newton)
 Projected gradient descent for box-constrained problems
 
 ## Installation
-'''
-bashgit clone https://github.com/Kripa-Vyas03/numoptlib
+```
+git clone https://github.com/Kripa-Vyas03/numoptlib
 cd numoptlib
 pip install -e .
-''' 
+```
 
 ## Usage
 To be completed with real examples and API signatures once implementation is finalised.
@@ -26,9 +26,9 @@ To be completed with real examples and API signatures once implementation is fin
 To be completed — will include convergence rate comparisons across methods on standard test functions (Rosenbrock, Beale, Himmelblau) with iteration count, function evaluations, and suboptimality gap plots.
 
 ## Running the tests
-'''
-bashpython -m pytest tests/ -v
-'''
+```
+python -m pytest tests/ -v
+```
 
 ## Dependencies
 Python >= 3.9
