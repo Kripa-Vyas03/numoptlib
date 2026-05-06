@@ -4,37 +4,31 @@ import matplotlib.pyplot as plt
 from numoptlib.unconstrained.gradient_descent import gradient_descent
 from numoptlib.unconstrained.momentum_gradient_descent import momentum_gradient_descent
 
-# -- well conditioned quadratic --
-
-# eigvals are 1.0, 2.0
+# --- well conditioned quadratic ---
+np.random.seed(42)
 eigvals = np.linspace(1.0, 2.0, 2)
-# make random orthogonal matrix
 Q, _ = np.linalg.qr(np.random.randn(2, 2))
-A = Q @ np.diag(eigvals) @ Q.T   
-b = np.array([1.0, 2.0])
+A = Q @ np.diag(eigvals) @ Q.T
 b = np.zeros(2)
-WC_quad_x_star = np.array(np.linalg.solve(A, b))
+WC_quad_x_star = np.linalg.solve(A, b)
 
-def WC_quad_f(x, A = A, b = b):
+def WC_quad_f(x, A=A, b=b):
     return 0.5 * x @ A @ x - b @ x
 
-def WC_quad_grad(x, A = A, b = b):
+def WC_quad_grad(x, A=A, b=b):
     return A @ x - b
 
-# -- ill-conditioned quadratic --
-
-# eigvals are 1.0, 2.0
-eigvals = np.logspace(0, np.log10(1e6), 2)
-# make random orthogonal matrix
+# --- ill conditioned quadratic ---
+eigvals_ill = np.linspace(1.0, 50.0, 2)   # condition number of 50
 Q, _ = np.linalg.qr(np.random.randn(2, 2))
-A = Q @ np.diag(eigvals) @ Q.T   
-b = np.array([1.0, 2.0])
-IC_quad_x_star = np.array(np.linalg.solve(A, b))
+A = Q @ np.diag(eigvals) @ Q.T
+b = np.zeros(2)
+IC_quad_x_star = np.linalg.solve(A, b)
 
-def IC_quad_f(x, A = A, b = b):
+def IC_quad_f(x, A=A, b=b):
     return 0.5 * x @ A @ x - b @ x
 
-def IC_quad_grad(x, A = A, b = b):
+def IC_quad_grad(x, A=A, b=b):
     return A @ x - b
 
 
@@ -62,10 +56,10 @@ def himmelblau_grad(x):
     ])
 
 starts = [
-    np.array([0.5, 0.0]),
-    np.array([-0.5, 3.0]),
-    np.array([2.5, -1.5]),
-    np.array([-3.0, -0.5]),
+    np.array([0.0, 0.5]),
+    np.array([-1.0, 3.0]),
+    np.array([2.0, -2.0]),
+    np.array([-3.0, -1.0]),
 ]
 
 himmelblau_x_star = np.array([
@@ -80,6 +74,68 @@ colors = [("steelblue", "deepskyblue", "navy"),
           ("mediumseagreen", "limegreen", "darkgreen"), 
           ("mediumpurple", "mediumorchid", "rebeccapurple")]
 
+def plot_quadratic_optim(name, f, grad_f, x_star, x0 = np.array([5.0, 3.0]), beta = 0.1, max_iter = 500):
+    # --- run solvers ---
+    result_gd  = gradient_descent(f, grad_f, x0)
+    result_mom = momentum_gradient_descent(f, grad_f, x0, beta=beta)
+    
+    history_gd  = np.array(result_gd.history)
+    history_mom = np.array(result_mom.history)
+    
+    # --- contour grid ---
+    margin = 0.5
+    all_x = np.concatenate([history_gd[:, 0], history_mom[:, 0], [WC_quad_x_star[0]]])
+    all_y = np.concatenate([history_gd[:, 1], history_mom[:, 1], [WC_quad_x_star[1]]])
+    x_min, x_max = all_x.min() - margin, all_x.max() + margin
+    y_min, y_max = all_y.min() - margin, all_y.max() + margin
+    
+    x_grid = np.linspace(x_min, x_max, 400)
+    y_grid = np.linspace(y_min, y_max, 400)
+    X, Y  = np.meshgrid(x_grid, y_grid)
+    Z     = np.array([[WC_quad_f(np.array([xi, yi])) for xi in x_grid] for yi in y_grid])
+    
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # --- shared contour plot function ---
+    def plot_path(ax, history, color, label, title):
+        ax.contourf(X, Y, Z, levels=30, cmap="Blues", alpha=0.4)
+        ax.contour(X, Y, Z, levels=30, colors="steelblue", alpha=0.5, linewidths=0.5)
+    
+        # optimization path
+        ax.plot(history[:, 0], history[:, 1],
+                "o-", color=color, markersize=2, linewidth=1, label=label)
+    
+        # start and end markers
+        ax.plot(history[0, 0],  history[0, 1],
+                "o", color=color, markersize=9, label="start")
+        ax.plot(history[-1, 0], history[-1, 1],
+                "*", color=color, markersize=12, label="end")
+    
+        # minimum
+        ax.plot(x_star[0], x_star[1],
+                "kx", markersize=12, markeredgewidth=2, label=f"minimum {WC_quad_x_star.round(3)}", zorder=5)
+    
+        ax.set_title(title)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.legend(fontsize=8)
+    
+    plot_path(axes[0], history_gd,  color="coral",       
+              label="GD path",       title=f"Gradient descent  ({result_gd.nit} iters)")
+    plot_path(axes[1], history_mom, color="mediumseagreen",
+              label="Momentum path", title=f"Momentum (β={beta})  ({result_mom.nit} iters)")
+    
+    plt.suptitle(f"{name.title()} Conditioned Quadratic — optimization paths", fontsize=13)
+    plt.tight_layout()
+    plt.savefig(f"{name.lower()}cond_quadratic_paths.png", dpi=150, bbox_inches="tight")
+    plt.show()
+    
+    print(f"Gradient descent  — iters: {result_gd.nit},  nfev: {result_gd.nfev},  converged: {result_gd.success}")
+    print(f"Momentum (β=0.9)  — iters: {result_mom.nit}, nfev: {result_mom.nfev}, converged: {result_mom.success}")
+    
+plot_quadratic_optim("Well", WC_quad_f, WC_quad_grad, WC_quad_x_star)
+plot_quadratic_optim("Ill", IC_quad_f, IC_quad_grad, IC_quad_x_star)
+
 
 def convergence_curve(f, grad_f, x_star, x0_factor, name, max_iter = 250):
     '''
@@ -90,7 +146,7 @@ def convergence_curve(f, grad_f, x_star, x0_factor, name, max_iter = 250):
     f_star = f(x_star)
     
     result_GD = gradient_descent(f, grad_f, x0, max_iter = max_iter) 
-    result_m = momentum_gradient_descent(f, grad_f, x0, max_iter = max_iter)   
+    result_m = momentum_gradient_descent(f, grad_f, x0, max_iter = max_iter, beta = 0.99)   
     
     GD_gap = [f(x) - f_star for x in result_GD.history]
     m_gap = [f(x) - f_star for x in result_m.history]
