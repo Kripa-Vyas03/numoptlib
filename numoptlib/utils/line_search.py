@@ -28,8 +28,8 @@ def line_search(f, grad_f, x, p, alpha = 1, alpha_max = 10, c1 = 1e-4, c2 = 0.8,
         
         def cubic_min(a, phi_a, dphi_a, b, phi_b, dphi_b, eps=1e-10):
             if abs(b - a) < eps:
-                return 0.5 * (a + b)    # bracket collapsed, fall back to bisection
-            
+                return 0.5 * (a + b)
+        
             d1 = dphi_a + dphi_b - 3*(phi_b - phi_a)/(b - a)
             d2_sq = d1**2 - dphi_a*dphi_b
         
@@ -37,10 +37,18 @@ def line_search(f, grad_f, x, p, alpha = 1, alpha_max = 10, c1 = 1e-4, c2 = 0.8,
                 return 0.5*(a + b)
         
             d2 = np.sqrt(d2_sq)
-            alpha = b - (b - a)*((dphi_b + d2 - d1)/(dphi_b - dphi_a + 2*d2))
+            
+            denom = dphi_b - dphi_a + 2*d2          # add this guard
+            if abs(denom) < eps:
+                return 0.5*(a + b)
+        
+            alpha = b - (b - a)*((dphi_b + d2 - d1)/denom)
         
             if not (min(a, b) < alpha < max(a, b)):
                 return 0.5*(a + b)
+        
+            margin = 0.1 * abs(b - a)
+            alpha = np.clip(alpha, min(a, b) + margin, max(a, b) - margin)
         
             return alpha
     
@@ -107,32 +115,4 @@ def line_search(f, grad_f, x, p, alpha = 1, alpha_max = 10, c1 = 1e-4, c2 = 0.8,
     return alpha
 
 
-# --- testing ---
-# quadratic
-# def f(x):
-#     return x[0]**2 + 10*x[1]**2
-
-# def grad_f(x):
-#     return np.array([2*x[0], 20*x[1]])
-# x = np.array([1.0, 1.0])
-# p = -grad_f(x)
-
-# alpha = line_search(f, grad_f, x, p, alpha = 3)
-# print("quadratic", alpha)
-
-
-# # # rosenbrock
-# def f(x):
-#     return 100*(x[1] - x[0]**2)**2 + (1 - x[0])**2
-
-# def grad_f(x):
-#     return np.array([
-#         -400*x[0]*(x[1] - x[0]**2) - 2*(1 - x[0]),
-#         200*(x[1] - x[0]**2)
-#     ])
-# x = np.array([-1.0, 1.0])
-# p = -grad_f(x)
-
-# alpha = line_search(f, grad_f, x, p, alpha = 3)
-# print("rosenbrock", alpha)
 
