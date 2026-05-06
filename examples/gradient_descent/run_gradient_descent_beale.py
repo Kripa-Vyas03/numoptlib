@@ -32,7 +32,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
 ax1.contourf(X, Y, Z, levels=np.logspace(0, 4, 30), cmap="gray", alpha=0.3)
 ax1.contour(X, Y, Z, levels=np.logspace(0, 4, 30), colors="gray", alpha=0.5, linewidths=0.5)
-ax1.plot(3, 0.5, "kx", markersize=12, markeredgewidth=2, label="minimum (3, 0.5)", zorder=5)
+ax1.plot(3, 0.5, "kx", markersize=12, markeredgewidth=2, label="Minimum (3, 0.5)", zorder=5)
 
 for x0, color in zip(starts, colors):
     result = gradient_descent(beale, beale_grad, x0, max_iter = 2000)
@@ -47,11 +47,12 @@ for x0, color in zip(starts, colors):
     losses = [beale(x) for x in result.history]
 
     ax1.plot(history[:, 0], history[:, 1], "o-", color=color,
-             markersize=2, linewidth=1, label=f"start {x0}")
+             markersize=2, linewidth=1, label=f"Start {x0}, {result.nit} iterations")
     ax1.plot(history[0, 0], history[0, 1], "o", color=color, markersize=8)
     ax1.plot(history[-1, 0], history[-1, 1], "*", color=color, markersize=12)
+    handles, labels = ax1.get_legend_handles_labels()
     
-    ax2.plot(losses, color=color, linewidth=1.5, label=f"start {x0}")
+    ax2.plot(losses, color=color, linewidth=1.5)
 
 
 ax1.set_xlim(-4.5, 4.5)
@@ -59,16 +60,15 @@ ax1.set_ylim(-4.5, 4.5)
 ax1.set_title("Beale — gradient descent paths")
 ax1.set_xlabel("x")
 ax1.set_ylabel("y")
-ax1.legend(fontsize=8)
-
 
 ax2.set_yscale("log")
 ax2.set_title("Loss vs iteration")
 ax2.set_xlabel("Iteration")
 ax2.set_ylabel("f(x)  [log scale]")
-ax2.legend(fontsize=8)
 ax2.grid(True, alpha=0.3)
 
+fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.55, -0.01), fontsize = 12, ncol = 2)
+
 plt.tight_layout()
-plt.savefig("examples/beale_gradient_descent_paths.png", dpi=150, bbox_inches="tight")
+plt.savefig("beale_gradient_descent_paths.png", dpi=150, bbox_inches="tight")
 plt.show()
