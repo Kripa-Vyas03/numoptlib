@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numoptlib.unconstrained.gradient_descent import gradient_descent
-from numoptlib.unconstrained.momentum_gradient_descent import momentum_gradient_descent
+from numoptlib.unconstrained.momentum import momentum_gradient_descent
 
 # --- well conditioned quadratic ---
 np.random.seed(42)
