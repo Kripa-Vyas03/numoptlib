@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from numoptlib.unconstrained.momentum_gradient_descent import momentum_gradient_descent
+from numoptlib.unconstrained.momentum import momentum_gradient_descent
 
 # --- fixtures ---
 
