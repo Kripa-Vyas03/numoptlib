@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numoptlib.unconstrained.momentum_gradient_descent import momentum_gradient_descent
+from numoptlib.unconstrained.momentum import momentum_gradient_descent
 
 def rosenbrock(x):
     return 100*(x[1] - x[0]**2)**2 + (1 - x[0])**2
@@ -16,7 +16,7 @@ def rosenbrock_grad(x):
 for x0 in ([[-1, 1], [0, 0], [-1.1, 1]]):
     x0 = np.array(x0)
     result = momentum_gradient_descent(rosenbrock, rosenbrock_grad, x0, max_iter = 2000)
-    
+    print(f"-- Start: {x0} --")
     print(f"Solution: {result.x}")
     print(f"Function value: {result.fun:.6f}")
     print(f"Converged: {result.success}")
@@ -80,7 +80,7 @@ ax1.set_title("Optimization path with varying decay rates")
 ax1.set_xlabel("x")
 ax1.set_ylabel("y")
 
-for r, beta, c in zip([result1, result2, result3], [0.99, 0.5, 1], ['tab:blue', "tab:red", "tab:orange"]):
+for r, beta, c in zip([result1, result2, result3], [0.99, 0.5, 0.01], ['tab:blue', "tab:red", "tab:orange"]):
     print(f"-- Beta: {beta} --")
     print(f"Solution: {r.x}")
     print(f"Function value: {r.fun:.6f}")
@@ -111,5 +111,5 @@ ax2.grid(True, alpha=0.3)
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig(f"rosenbrock_gradient_descent_comparingbetas.png", dpi=150, bbox_inches="tight")
+plt.savefig("rosenbrock_gradient_descent_comparingbetas.png", dpi=150, bbox_inches="tight")
 plt.show()

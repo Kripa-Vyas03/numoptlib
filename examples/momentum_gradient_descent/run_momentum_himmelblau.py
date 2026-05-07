@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
-from numoptlib.unconstrained.momentum_gradient_descent import momentum_gradient_descent
+from numoptlib.unconstrained.momentum import momentum_gradient_descent
 
 
 def himmelblau(x):
@@ -44,23 +44,25 @@ for x0, color in zip(starts, colors):
     losses = [himmelblau(x) for x in result.history]
 
     ax1.plot(history[:, 0], history[:, 1], "o-", color=color,
-             markersize=2, linewidth=1, label=f"start {x0}")
+             markersize=2, linewidth=1, label=f"Start {x0}, {result.nit} iterations")
     ax1.plot(history[0, 0], history[0, 1], "o", color=color, markersize=8)
-    ax1.plot(history[-1, 0], history[-1, 1], "*", color=color, markersize=12)
+    ax1.plot(history[-1, 0], history[-1, 1], marker = "*", color=color, markersize = 12)
+    handles, labels = ax1.get_legend_handles_labels()
     
     ax2.plot(losses, color=color, linewidth=1.5, label=f"start {x0}")
 
-ax1.set_title("Himmelblau — gradient descent paths")
+ax1.set_title("Himmelblau — momentum gradient descent paths")
 ax1.set_xlabel("x")
 ax1.set_ylabel("y")
-ax1.legend(fontsize=8)
 
 ax2.set_yscale("log")
 ax2.set_title("Loss vs iteration")
 ax2.set_xlabel("Iteration")
 ax2.set_ylabel("f(x)  [log scale]")
-ax2.legend(fontsize=8)
+# ax2.legend(fontsize=8)
 ax2.grid(True, alpha=0.3)
+fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.55, -0.01), fontsize = 12, ncol = 2)
+
 
 plt.tight_layout()
 plt.savefig("himmelblau_gradient_descent_paths.png", dpi=150, bbox_inches="tight")
